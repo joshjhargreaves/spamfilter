@@ -1,11 +1,10 @@
 import java.io.File;
+import java.util.*;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.io.FileNotFoundException;
 
 public class Filter {
-	HashMap<String, Integer> m_spam = new HashMap<String, Integer>();
-	HashMap<String, Integer> m_ham = new HashMap<String, Integer>();
     int m_spam_count = 0;
     int m_ham_count = 0;
 	public static void main (String[] args) {
@@ -33,7 +32,12 @@ public class Filter {
 			}
 		}
     }
+
     public void readFromFile(String filename, boolean spamFlag) {
+        Map<String, Integer> m_spam = new HashMap<String, Integer>();
+        Map<String, Integer> m_ham = new HashMap<String, Integer>();
+        Map<String, Double> m_spam_prob = null;
+        Map<String, Double> m_ham_prob = null;
     	Scanner sc = null;
     	try {
     		sc = new Scanner(new File(filename));
@@ -66,8 +70,21 @@ public class Filter {
     			}
 	    	}
     	}
-    	sc.close();
+        sc.close();
+        m_spam_prob = calcProbabilities(m_spam, m_spam_count);
+        m_ham_prob = calcProbabilities(m_ham, m_ham_count);
     }
 
-
+    public static Map<String, Double>  calcProbabilities(Map<String, Integer> hm, int total) {
+        Iterator it = hm.keySet().iterator();
+        Map<String, Double> output = new HashMap<String, Double>();
+        for (Map.Entry<String, Integer> entry : hm.entrySet()) {
+            String key = entry.getKey();
+            int value = entry.getValue();
+            Double temp = 1.0;
+            //Double temp = (Double) value/total;
+            output.put(key, temp);
+        }
+        return output;
+    }
 }
