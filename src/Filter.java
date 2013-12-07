@@ -10,10 +10,6 @@ public class Filter {
 	public static void main (String[] args) {
 		String files;
         Filter filter = new Filter();
-		/*Prints out the arguments. Just for testing*/
-        for (String s: args) {
-            System.out.println(s);
-        }
         /*The first argument is the training folder*/
 		String path = args[0]; 
 		File folder = new File(path);
@@ -47,7 +43,6 @@ public class Filter {
     	}
     	while (sc.hasNext()) {
     		String w = sc.next();
-    		System.out.println(w);
     		if(spamFlag == true) {
     			if(m_spam.containsKey(w) == true) {
     				m_spam.put(w, m_spam.get(w) + 1);
@@ -81,8 +76,7 @@ public class Filter {
         for (Map.Entry<String, Integer> entry : hm.entrySet()) {
             String key = entry.getKey();
             int value = entry.getValue();
-            Double temp = 1.0;
-            //Double temp = (Double) value/total;
+            double temp = (double) ((double)value/(double)total);
             output.put(key, temp);
         }
         return output;
