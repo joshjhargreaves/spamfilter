@@ -1,0 +1,56 @@
+//compiling
+SETUP javac *.java
+
+//basic test: identity
+ALL
+TEST java filter train1 test1/1.txt
+OUT ham
+// log(Likelihood(ham))-log(likelihood(spam)) = 0.69
+
+TEST java filter train1 test1/2.txt
+OUT spam
+// log(Likelihood(ham))-log(likelihood(spam)) = -0.69
+
+//simple test
+ALL
+TEST java filter train2 test2/1.txt
+OUT ham
+// log(Likelihood(ham))-log(likelihood(spam)) = 0.81
+
+TEST java filter train2 test2/2.txt
+OUT spam
+// log(Likelihood(ham))-log(likelihood(spam)) = -0.58
+
+TEST java filter train2 test2/3.txt
+OUT ham
+// log(Likelihood(ham))-log(likelihood(spam)) = 0.12
+
+//testing prior probabilities
+ALL
+TEST java filter train3 test3/1.txt
+OUT ham
+// log(Likelihood(ham))-log(likelihood(spam)) = 0.81
+
+TEST java filter train3 test3/2.txt
+OUT spam
+// log(Likelihood(ham))-log(likelihood(spam)) = -0.29
+
+TEST java filter train3 test3/3.txt
+OUT ham
+// log(Likelihood(ham))-log(likelihood(spam)) = 0.12
+
+//testing LaPlace correction
+ALL
+TEST java filter train4 test4/1.txt
+OUT spam
+// log(Likelihood(ham))-log(likelihood(spam)) = -5.32
+
+TEST java filter train4 test4/2.txt
+OUT ham
+// log(Likelihood(ham))-log(likelihood(spam)) = 0.027
+
+TEST java filter train4 test4/3.txt
+OUT spam
+// log(Likelihood(ham))-log(likelihood(spam)) = -0.58
+
+TOTAL

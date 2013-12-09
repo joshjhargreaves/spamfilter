@@ -1,0 +1,30 @@
+
+FAIL: java filter sampletrain sampletest/1.txt
+   Expected: spam
+   Actual:   no output
+   Expected: no error output
+   Error:   Error: Could not find or load main class filter
+//ln(Likelihood(ham)) - ln(likelihood(spam)) = -0.223
+
+FAIL: java filter sampletrain sampletest/2.txt
+   Expected: ham
+   Actual:   no output
+   Expected: no error output
+   Error:   Error: Could not find or load main class filter
+//ln(Likelihood(ham)) - ln(likelihood(spam)) = 2.61
+
+FAIL: java filter train3cool test3cool/1.txt
+   Expected: ham
+   Actual:   no output
+   Expected: no error output
+   Error:   Error: Could not find or load main class filter
+//ln(Likelihood(ham)) - ln(likelihood(spam)) = 0.693
+
+FAIL: java filter train3cool test3cool/2.txt
+   Expected: ham
+   Actual:   no output
+   Expected: no error output
+   Error:   Error: Could not find or load main class filter
+//ln(Likelihood(ham)) - ln(likelihood(spam)) = 0.693
+
+TOTAL: 0/4
