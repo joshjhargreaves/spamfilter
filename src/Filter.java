@@ -3,6 +3,7 @@ import java.util.*;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.io.FileNotFoundException;
+import java.lang.Math;
 
 public class Filter {
     Map<String, Integer> m_spam = new HashMap<String, Integer>();
@@ -18,7 +19,7 @@ public class Filter {
 		File folder = new File(path);
 		File[] listOfFiles = folder.listFiles();
         int total_spam=0, total_ham=0, total=0;
-        float ham_Prior, spam_Prior;
+        double ham_Prior, spam_Prior;
         String classification;
 
 		/*Loops through files in the training directory*/
@@ -41,8 +42,8 @@ public class Filter {
         filter.calcProbabilities(false);
         /*Calculates priors*/
         total = total_ham + total_spam;
-        ham_Prior = (float)total_ham/(float)total;
-        spam_Prior = (float)total_spam/(float)total;
+        ham_Prior = Math.log((double)total_ham/(double)total);
+        spam_Prior = Math.log((double)total_spam/(double)total);
         /*The second argument is the test data*/
         path = args[1]; 
         File f = new File(path);
@@ -50,13 +51,14 @@ public class Filter {
             double spam_probs = filter.multProbabilities(true, f);
             double ham_probs = filter.multProbabilities(false, f);
             
-            double arg_spam = spam_Prior*spam_probs;
-            double arg_ham = ham_Prior*ham_probs;
+            double arg_spam = spam_Prior+spam_probs;
+            double arg_ham = ham_Prior+ham_probs;
 
             if((arg_spam-arg_ham) > 0)
                 classification = "spam";
             else
                 classification = "ham";
+            System.out.println(arg_ham - arg_spam);
             System.out.println(classification);
         }
 
@@ -66,7 +68,7 @@ public class Filter {
     	Scanner sc = null;
     	try {
     		sc = new Scanner(filename);
-    		//useDelimiter(("?<=\\s\\w{1,10})[^\\w\\s])?\\s|[^\\w\\s]$"));
+    		sc.useDelimiter(("((?<=\\s\\w{1,10})[^\\w\\s])?\\s|[^\\w\\s]$"));
     	} catch (FileNotFoundException e) {
     		System.out.println(e);
     	}
@@ -125,7 +127,7 @@ public class Filter {
     }
 
     public double multProbabilities(boolean spamFlag, File filename) {
-        double product = 1;
+        double product = 0;
         Scanner sc = null;
         double prob;
         try {
@@ -142,7 +144,7 @@ public class Filter {
                 } else {
                     prob = m_ham_prob.get(w);
                 }
-                product *= prob;
+                product += Math.log(prob);
             }
         }
         return product;
