@@ -70,12 +70,12 @@ public class Filter {
             String currentLine;
             String[] lineArray;
             currentLine = br.readLine();
-            lineArray = currentLine.split(",");
+            lineArray = currentLine.split(" ");
             ham_Prior = Double.parseDouble(lineArray[0]);
             spam_Prior = Double.parseDouble(lineArray[1]);
             
             while ((currentLine = br.readLine()) != null) {
-                lineArray = currentLine.split(",");
+                lineArray = currentLine.split(" ");
                 String key = lineArray[0];
                 double ham_prob = Double.parseDouble(lineArray[1]);
                 double spam_prob = Double.parseDouble(lineArray[2]);

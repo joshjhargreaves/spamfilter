@@ -118,13 +118,13 @@ public class Train {
         BufferedWriter out = null;
         try {
             out = new BufferedWriter(new FileWriter("training.txt"));
-            out.write(ham_Prior + "," + spam_Prior);
+            out.write(ham_Prior + " " + spam_Prior);
             out.newLine();
             for (Map.Entry<String, Double> entry : m_ham_prob.entrySet()) {
                 String key = entry.getKey();
                 double ham_value = entry.getValue();
                 double spam_value = m_spam_prob.get(key);
-                out.write(key+","+ham_value+","+spam_value);
+                out.write(key+" "+ham_value+" "+spam_value);
                 out.newLine();
             }
             out.close();
