@@ -27,21 +27,34 @@ public class Train {
             File[] listOfFiles = folder.listFiles();
             int chunk = listOfFiles.length/10;
             int startIndex = 0, endIndex = 0;
-            int correct, incorrect;
+            double correct, incorrect;
+            double true_positive, true_negative, false_positive, false_negative;
+            double error = 0;
+            double av_false_positive = 0;
+            double av_false_negative = 0;
+
+            int test_ham_total = 0;
+            int test_spam_total = 0;
             for(int i=0; i<10; i++) {
                 correct = 0;
                 incorrect = 0;
+
+                true_positive = 0;
+                true_negative = 0;
+                false_positive = 0;
+                false_negative = 0;
+
                 training.total_spam=0;
                 training.total_ham=0;
                 startIndex=(i*chunk);
-                endIndex=startIndex+chunk-1;
+                endIndex=startIndex+chunk;
                 File[] test = Arrays.copyOfRange(listOfFiles, startIndex, endIndex);
                 if(startIndex != 0) {
-                    File[] train1 = Arrays.copyOfRange(listOfFiles, 0, startIndex-1);
+                    File[] train1 = Arrays.copyOfRange(listOfFiles, 0, startIndex);
                     training.trainFromFiles(train1);
                 }
-                if (endIndex != listOfFiles.length -1) {
-                    File[] train2 = Arrays.copyOfRange(listOfFiles, endIndex, listOfFiles.length-1);
+                if (endIndex != listOfFiles.length) {
+                    File[] train2 = Arrays.copyOfRange(listOfFiles, endIndex, listOfFiles.length);
                     training.trainFromFiles(train2);
                 }
 
@@ -56,19 +69,48 @@ public class Train {
                 spam_Prior = (double)training.total_spam/(double)total;
 
                 for(File f: test) {
+
                     String result = training.filterFile(f, ham_Prior, spam_Prior);
-                    if(f.getName().startsWith(result)) {
-                        correct++;
+
+                    if(f.getName().startsWith("ham")) {
+
+                        test_ham_total++;
+
+                        if (result.equals("ham"))
+                            true_positive++;
+                        else
+                            false_positive++;
+
                     } else {
-                        incorrect++;
+
+                        test_spam_total++;
+
+                        if (result.equals("spam"))
+                            true_negative++;
+                        else
+                            false_negative++;
                     }
                 }
-                System.out.println((double)correct/((double)correct + (double)incorrect));
+
+                correct = true_positive + true_negative;
+                incorrect = false_positive + false_negative;
+
+                false_positive /= (double)test_ham_total;
+                false_negative /= (double)test_spam_total;
+
+                av_false_positive += false_positive;
+                av_false_negative += false_negative;
+
+                error+=(double)incorrect/((double)correct + (double)incorrect);
+
                 training.m_ham.clear();
                 training.m_ham_prob.clear();
                 training.m_spam.clear();
                 training.m_spam_prob.clear();
             }
+            System.out.println(av_false_positive/10);
+            System.out.println(av_false_negative/10);
+            System.out.println(100*error/10 + "%");
         } else {
     		String files;
             /*The first argument is the training folder*/
