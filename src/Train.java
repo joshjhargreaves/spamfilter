@@ -15,11 +15,13 @@ public class Train {
     Map<String, Integer> m_ham = new HashMap<String, Integer>();
     Map<String, Double> m_spam_prob = new HashMap<String, Double>();
     Map<String, Double> m_ham_prob = new HashMap<String, Double>();
+    List<String> stopwords = new ArrayList<String>();
     int total_spam=0, total_ham=0;
 
 
 	public static void main (String[] args) {
         Train training = new Train();
+        training.readInStopWords();
         double ham_Prior, spam_Prior;
         if(args.length > 1 && args[0].equals("-xval")) {
             String path = args[1]; 
@@ -147,6 +149,18 @@ public class Train {
             training.writeToFile(ham_Prior, spam_Prior);
         }
     }
+   public void readInStopWords() {
+        Scanner sc = null;
+        try {
+            sc = new Scanner(new File("stopwords.txt")).useDelimiter(",");
+        } catch (Exception e) {
+            System.out.println("Cannot find stopwords.txt");
+        }
+        while (sc.hasNext()) {
+            String w = sc.next();
+            stopwords.add(w);
+        }
+    }
     public void trainFromFiles(File[] inFiles) {
         String files = new String();
         for (File f: inFiles) {
@@ -174,8 +188,8 @@ public class Train {
     	}
     	while (sc.hasNext()) {
     		String w = sc.next();
-            w = w.replaceAll("[^A-Za-z0-9 ]", "");
-            if(!w.equals("")) {
+            w = w.replaceAll("[^A-Za-z0-9']", "");
+            if(!w.equals("") && !stopwords.contains(w)) {
     		  if(spamFlag == true) {
     			if(m_spam.containsKey(w) == true) {
     				m_spam.put(w, m_spam.get(w) + 1);
@@ -278,8 +292,8 @@ public class Train {
         }
         while (sc.hasNext()) {
             String w = sc.next();
-            w = w.replaceAll("[^A-Za-z0-9 ]", "");
-            if(!w.equals("")) {
+            w = w.replaceAll("[^A-Za-z0-9']", "");
+            if(!w.equals("") && !stopwords.contains(w)) {
                 if(m_spam_prob.containsKey(w)) {
                     if (spamFlag){
                         prob = m_spam_prob.get(w);
