@@ -27,7 +27,10 @@ public class Train {
             File[] listOfFiles = folder.listFiles();
             int chunk = listOfFiles.length/10;
             int startIndex = 0, endIndex = 0;
+            int correct, incorrect;
             for(int i=0; i<10; i++) {
+                correct = 0;
+                incorrect = 0;
                 training.total_spam=0;
                 training.total_ham=0;
                 startIndex=(i*chunk);
@@ -53,9 +56,14 @@ public class Train {
                 spam_Prior = (double)training.total_spam/(double)total;
 
                 for(File f: test) {
-                    training.filterFile(f, ham_Prior, spam_Prior);
+                    String result = training.filterFile(f, ham_Prior, spam_Prior);
+                    if(f.getName().startsWith(result)) {
+                        correct++;
+                    } else {
+                        incorrect++;
+                    }
                 }
-
+                System.out.println((double)correct/((double)correct + (double)incorrect));
                 training.m_ham.clear();
                 training.m_ham_prob.clear();
                 training.m_spam.clear();
@@ -213,7 +221,6 @@ public class Train {
             else
                 classification = "ham";
         }
-        System.out.println(classification);
         return classification;
     }
 
