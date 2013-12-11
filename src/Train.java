@@ -159,8 +159,7 @@ public class Train {
                 double temp = (double) ((double)value/((double)distinct_words + (double)n));
                 m_spam_prob.put(key, temp);
             }
-        }
-        else {
+        } else {
             for (Map.Entry<String, Integer> entry : m_ham.entrySet()) {
                 int value = entry.getValue();
                 if(value > 1)
@@ -227,13 +226,16 @@ public class Train {
         }
         while (sc.hasNext()) {
             String w = sc.next();
-            if(m_spam_prob.containsKey(w)) {
-                if (spamFlag){
-                    prob = m_spam_prob.get(w);
-                } else {
-                    prob = m_ham_prob.get(w);
+            w = w.replaceAll("[^A-Za-z0-9 ]", "");
+            if(!w.equals("")) {
+                if(m_spam_prob.containsKey(w)) {
+                    if (spamFlag){
+                        prob = m_spam_prob.get(w);
+                    } else {
+                        prob = m_ham_prob.get(w);
+                    }
+                    product += Math.log(prob);
                 }
-                product += Math.log(prob);
             }
         }
         return product;
