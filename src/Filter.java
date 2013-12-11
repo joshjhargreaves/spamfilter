@@ -17,28 +17,29 @@ public class Filter {
 
     public static void main (String[] args) {
         Filter filter = new Filter();
-        String classification;
-
-        /*The first argument is the test data*/
-        File f = new File(args[0]);
-        
         filter.readTrainingFile();
-
+        String classification;
+        System.out.println(filter.filterFile(new File(args[0])));
+    }
+    public String filterFile(File f) {
+         /*The first argument is the test data*/
+        String classification = null;
         if (f.isFile()) {
-            double spam_probs = filter.multProbabilities(true, f);
-            double ham_probs = filter.multProbabilities(false, f);
+            classification = new String();
+            double spam_probs = this.multProbabilities(true, f);
+            double ham_probs = this.multProbabilities(false, f);
 
-            double arg_spam = Math.log(filter.spam_Prior)*spam_probs;
-            double arg_ham = Math.log(filter.ham_Prior)*ham_probs;
+            double arg_spam = Math.log(this.spam_Prior)*spam_probs;
+            double arg_ham = Math.log(this.ham_Prior)*ham_probs;
 
             if((arg_spam-arg_ham) > 0)
                 classification = "spam";
             else
                 classification = "ham";
-            System.out.println(classification);
+            return classification;
         }
+        return classification;
     }
-
     public double multProbabilities(boolean spamFlag, File filename) {
         double product = 0;
         Scanner sc = null;
