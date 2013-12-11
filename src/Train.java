@@ -124,21 +124,24 @@ public class Train {
     	}
     	while (sc.hasNext()) {
     		String w = sc.next();
-    		if(spamFlag == true) {
+            w = w.replaceAll("[^A-Za-z0-9 ]", "");
+            if(!w.equals("")) {
+    		  if(spamFlag == true) {
     			if(m_spam.containsKey(w) == true) {
     				m_spam.put(w, m_spam.get(w) + 1);
     			} else {
     				m_ham.put(w, 1);
                     m_spam.put(w, 2);
     			}
-	    	} else {
-	    		if(m_ham.containsKey(w) == true) {
-    				m_ham.put(w, m_ham.get(w) + 1);
-    			} else {
-                    m_ham.put(w, 2);
-                    m_spam.put(w, 1);
-    			}
-	    	}
+    	    	} else {
+    	    		if(m_ham.containsKey(w) == true) {
+        				m_ham.put(w, m_ham.get(w) + 1);
+        			} else {
+                        m_ham.put(w, 2);
+                        m_spam.put(w, 1);
+        			}
+    	    	}
+            }
     	}
         sc.close();
     }
@@ -202,15 +205,15 @@ public class Train {
             double spam_probs = multProbabilities(true, f);
             double ham_probs = multProbabilities(false, f);
 
-            arg_spam = Math.log(spam_Prior)*spam_probs;
-            arg_ham = Math.log(ham_Prior)*ham_probs;
+            arg_spam = Math.log(spam_Prior)+spam_probs;
+            arg_ham = Math.log(ham_Prior)+ham_probs;
 
             if((arg_spam-arg_ham) > 0)
                 classification = "spam";
             else
                 classification = "ham";
         }
-        System.out.println(arg_spam + " " + arg_ham);
+        System.out.println(classification);
         return classification;
     }
 

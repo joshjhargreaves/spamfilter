@@ -29,8 +29,8 @@ public class Filter {
             double spam_probs = this.multProbabilities(true, f);
             double ham_probs = this.multProbabilities(false, f);
 
-            double arg_spam = Math.log(this.spam_Prior)*spam_probs;
-            double arg_ham = Math.log(this.ham_Prior)*ham_probs;
+            double arg_spam = Math.log(this.spam_Prior)+spam_probs;
+            double arg_ham = Math.log(this.ham_Prior)+ham_probs;
 
             if((arg_spam-arg_ham) > 0)
                 classification = "spam";
