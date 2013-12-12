@@ -180,31 +180,40 @@ public class Train {
     }
     public void readFromFile(File filename, boolean spamFlag) {
     	Scanner sc = null;
+        boolean subjectSeen = false;
     	try {
     		sc = new Scanner(filename);
     		//sc.useDelimiter(("((?<=\\s\\w{1,10})[^\\w\\s])?\\s|[^\\w\\s]$"));
     	} catch (FileNotFoundException e) {
     		System.out.println(e);
     	}
-    	while (sc.hasNext()) {
-    		String w = sc.next();
-            w = w.replaceAll("[^A-Za-z0-9']", "");
-            if(!w.equals("") && !stopwords.contains(w)) {
-    		  if(spamFlag == true) {
-    			if(m_spam.containsKey(w) == true) {
-    				m_spam.put(w, m_spam.get(w) + 1);
-    			} else {
-    				m_ham.put(w, 1);
-                    m_spam.put(w, 2);
-    			}
-    	    	} else {
-    	    		if(m_ham.containsKey(w) == true) {
-        				m_ham.put(w, m_ham.get(w) + 1);
+    	while (sc.hasNextLine()) {
+    		String words = sc.nextLine();
+            String[] wordsArray = words.split(" ");
+            if(words.toLowerCase().startsWith("subject") && subjectSeen == false) {
+                subjectSeen = true;
+                for(int i=1; i<wordsArray.length;i++)
+                    wordsArray[i] = "subject" + wordsArray[i];
+            }
+            for(String w: wordsArray) {
+                w = w.replaceAll("[^A-Za-z0-9']", "");
+                if(!w.equals("") && !w.equals(" ") && !stopwords.contains(w)) {
+        		  if(spamFlag == true) {
+        			if(m_spam.containsKey(w) == true) {
+        				m_spam.put(w, m_spam.get(w) + 1);
         			} else {
-                        m_ham.put(w, 2);
-                        m_spam.put(w, 1);
+        				m_ham.put(w, 1);
+                        m_spam.put(w, 2);
         			}
-    	    	}
+        	    	} else {
+        	    		if(m_ham.containsKey(w) == true) {
+            				m_ham.put(w, m_ham.get(w) + 1);
+            			} else {
+                            m_ham.put(w, 2);
+                            m_spam.put(w, 1);
+            			}
+        	    	}
+                }
             }
     	}
         sc.close();
@@ -284,23 +293,33 @@ public class Train {
         double product = 0;
         Scanner sc = null;
         double prob;
+        boolean subjectSeen = false;
         try {
             sc = new Scanner(filename);
         //    sc.useDelimiter(("((?<=\\s\\w{1,10})[^\\w\\s])?\\s|[^\\w\\s]$"));
         } catch (FileNotFoundException e) {
             System.out.println(e);
         }
-        while (sc.hasNext()) {
-            String w = sc.next();
-            w = w.replaceAll("[^A-Za-z0-9']", "");
-            if(!w.equals("") && !stopwords.contains(w)) {
-                if(m_spam_prob.containsKey(w)) {
-                    if (spamFlag){
-                        prob = m_spam_prob.get(w);
-                    } else {
-                        prob = m_ham_prob.get(w);
+        while (sc.hasNextLine()) {
+            String words = sc.nextLine();
+            String[] wordsArray = words.split(" ");
+            if(words.toLowerCase().startsWith("subject") && !subjectSeen) {
+                subjectSeen = true;
+                for(int i=1; i<wordsArray.length; i++) {
+                    wordsArray[i] = "subject" + wordsArray[i];
+                }
+            }
+            for(String w: wordsArray) {
+                w = w.replaceAll("[^A-Za-z0-9']", "");
+                if(!w.equals("") && !w.equals(" ") && !stopwords.contains(w)) {
+                    if(m_spam_prob.containsKey(w)) {
+                        if (spamFlag){
+                            prob = m_spam_prob.get(w);
+                        } else {
+                            prob = m_ham_prob.get(w);
+                        }
+                        product += Math.log(prob);
                     }
-                    product += Math.log(prob);
                 }
             }
         }
