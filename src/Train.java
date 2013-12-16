@@ -18,7 +18,6 @@ public class Train {
     List<String> stopwords = new ArrayList<String>();
     int total_spam=0, total_ham=0;
 
-
 	public static void main (String[] args) {
         Train training = new Train();
         training.readInStopWords();
@@ -34,6 +33,7 @@ public class Train {
             double error = 0;
             double av_false_positive = 0;
             double av_false_negative = 0;
+            double errors[] = new double[10];
 
             int test_ham_total = 0;
             int test_spam_total = 0;
@@ -99,12 +99,12 @@ public class Train {
 
                 false_positive /= (double)test_ham_total;
                 false_negative /= (double)test_spam_total;
-
                 av_false_positive += false_positive;
                 av_false_negative += false_negative;
 
                 error+=(double)incorrect/((double)correct + (double)incorrect);
-
+                errors[i] = ((double)incorrect/((double)correct + (double)incorrect))*100;
+                System.out.println("Error[" + i + "] = " + errors[i]);
                 training.m_ham.clear();
                 training.m_ham_prob.clear();
                 training.m_spam.clear();
@@ -113,6 +113,8 @@ public class Train {
             System.out.println(av_false_positive/10);
             System.out.println(av_false_negative/10);
             System.out.println(100*error/10 + "%");
+            Statistics stat = new Statistics(errors);
+            System.out.println("Error std:dev = " + stat.getStdDev());
         } else {
     		String files;
             /*The first argument is the training folder*/
@@ -190,31 +192,33 @@ public class Train {
     	while (sc.hasNextLine()) {
     		String words = sc.nextLine();
             String[] wordsArray = words.split(" ");
-            if(words.toLowerCase().startsWith("subject") && subjectSeen == false) {
+            if(words.toLowerCase().startsWith("subject:") && subjectSeen == false) {
                 subjectSeen = true;
                 for(int i=1; i<wordsArray.length;i++)
                     wordsArray[i] = "subject" + wordsArray[i];
             }
-            for(String w: wordsArray) {
-                w = w.replaceAll("[^A-Za-z0-9']", "");
-                if(!w.equals("") && !w.equals(" ") && !stopwords.contains(w)) {
-        		  if(spamFlag == true) {
-        			if(m_spam.containsKey(w) == true) {
-        				m_spam.put(w, m_spam.get(w) + 1);
-        			} else {
-        				m_ham.put(w, 1);
-                        m_spam.put(w, 2);
-        			}
-        	    	} else {
-        	    		if(m_ham.containsKey(w) == true) {
-            				m_ham.put(w, m_ham.get(w) + 1);
+            //if(subjectSeen) {
+                for(String w: wordsArray) {
+                    w = w.replaceAll("[^A-Za-z0-9']", "");
+                    if(!w.equals("") && !w.equals(" ") && !stopwords.contains(w)) {
+            		  if(spamFlag == true) {
+            			if(m_spam.containsKey(w) == true) {
+            				m_spam.put(w, m_spam.get(w) + 1);
             			} else {
-                            m_ham.put(w, 2);
-                            m_spam.put(w, 1);
+            				m_ham.put(w, 1);
+                            m_spam.put(w, 2);
             			}
-        	    	}
+            	    	} else {
+            	    		if(m_ham.containsKey(w) == true) {
+                				m_ham.put(w, m_ham.get(w) + 1);
+                			} else {
+                                m_ham.put(w, 2);
+                                m_spam.put(w, 1);
+                			}
+            	    	}
+                    }
                 }
-            }
+           // }
     	}
         sc.close();
     }
@@ -303,27 +307,54 @@ public class Train {
         while (sc.hasNextLine()) {
             String words = sc.nextLine();
             String[] wordsArray = words.split(" ");
-            if(words.toLowerCase().startsWith("subject") && !subjectSeen) {
+            if(words.toLowerCase().startsWith("subject:") && !subjectSeen) {
                 subjectSeen = true;
                 for(int i=1; i<wordsArray.length; i++) {
                     wordsArray[i] = "subject" + wordsArray[i];
                 }
             }
-            for(String w: wordsArray) {
-                w = w.replaceAll("[^A-Za-z0-9']", "");
-                if(!w.equals("") && !w.equals(" ") && !stopwords.contains(w)) {
-                    if(m_spam_prob.containsKey(w)) {
-                        if (spamFlag){
-                            prob = m_spam_prob.get(w);
-                        } else {
-                            prob = m_ham_prob.get(w);
+            //if(subjectSeen) {
+                for(String w: wordsArray) {
+                    w = w.replaceAll("[^A-Za-z0-9']", "");
+                    if(!w.equals("") && !w.equals(" ") && !stopwords.contains(w)) {
+                        if(m_spam_prob.containsKey(w)) {
+                            if (spamFlag){
+                                prob = m_spam_prob.get(w);
+                            } else {
+                                prob = m_ham_prob.get(w);
+                            }
+                            product += Math.log(prob);
                         }
-                        product += Math.log(prob);
                     }
                 }
-            }
+           // }
         }
         return product;
     }
 
+    public void writeWords()  {
+        BufferedWriter spamout = null, hamout = null;
+        try {
+            spamout = new BufferedWriter(new FileWriter("spamWords.txt"));
+            hamout = new BufferedWriter(new FileWriter("hamWords.txt"));
+            for (Map.Entry<String, Integer> entry : m_ham.entrySet()) {
+                String key = entry.getKey();
+                double ham_value = entry.getValue();
+                double spam_value = m_spam_prob.get(key);
+                hamout.write(key+" "+ham_value);
+                hamout.newLine();
+            }
+            for (Map.Entry<String, Integer> entry : m_spam.entrySet()) {
+                String key = entry.getKey();
+                double ham_value = entry.getValue();
+                double spam_value = m_spam_prob.get(key);
+                spamout.write(key+" "+ham_value);
+                spamout.newLine();
+            }
+            hamout.close();
+            spamout.close();
+        } catch (java.io.IOException e) {
+            System.out.println(e);
+        }
+    }
 }
