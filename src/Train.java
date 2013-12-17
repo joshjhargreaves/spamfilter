@@ -104,14 +104,15 @@ public class Train {
 
                 error+=(double)incorrect/((double)correct + (double)incorrect);
                 errors[i] = ((double)incorrect/((double)correct + (double)incorrect))*100;
-                System.out.println("Error[" + i + "] = " + errors[i]);
+                System.out.print("Fold" + i + " = " + errors[i]);
+                System.out.println(" False Pos: " + 100*false_positive + ", " + "false_neg: " + false_negative*100);
                 training.m_ham.clear();
                 training.m_ham_prob.clear();
                 training.m_spam.clear();
                 training.m_spam_prob.clear();
             }
-            System.out.println(av_false_positive/10);
-            System.out.println(av_false_negative/10);
+            System.out.println(av_false_positive/10*100);
+            System.out.println(av_false_negative/10*100);
             System.out.println(100*error/10 + "%");
             Statistics stat = new Statistics(errors);
             System.out.println("Error std:dev = " + stat.getStdDev());
@@ -182,7 +183,7 @@ public class Train {
     }
     public void readFromFile(File filename, boolean spamFlag) {
     	Scanner sc = null;
-        boolean subjectSeen = false;
+        boolean subjectSeen = false, doneOnce = false;
     	try {
     		sc = new Scanner(filename);
     		//sc.useDelimiter(("((?<=\\s\\w{1,10})[^\\w\\s])?\\s|[^\\w\\s]$"));
@@ -194,13 +195,16 @@ public class Train {
             String[] wordsArray = words.split(" ");
             if(words.toLowerCase().startsWith("subject:") && subjectSeen == false) {
                 subjectSeen = true;
-                for(int i=1; i<wordsArray.length;i++)
-                    wordsArray[i] = "subject" + wordsArray[i];
             }
             //if(subjectSeen) {
                 for(String w: wordsArray) {
-                    w = w.replaceAll("[^A-Za-z0-9']", "");
-                    if(!w.equals("") && !w.equals(" ") && !stopwords.contains(w)) {
+                    w = w.replaceAll("[^A-Za-z']", "");
+                    if(w.length() > 2 && !w.equals("") && !w.equals(" ") && !stopwords.contains(w.toLowerCase())) {
+                        if(subjectSeen && !doneOnce) {
+                            w = "*" + w;
+                        }
+                  // if(!stopwords.contains(w.toLowerCase())) {
+                     //if(!w.equals("") && !w.equals(" ")) {
             		  if(spamFlag == true) {
             			if(m_spam.containsKey(w) == true) {
             				m_spam.put(w, m_spam.get(w) + 1);
@@ -218,6 +222,8 @@ public class Train {
             	    	}
                     }
                 }
+                if(subjectSeen)
+                    doneOnce = true;
            // }
     	}
         sc.close();
@@ -297,7 +303,7 @@ public class Train {
         double product = 0;
         Scanner sc = null;
         double prob;
-        boolean subjectSeen = false;
+        boolean subjectSeen = false, doneOnce = false;
         try {
             sc = new Scanner(filename);
         //    sc.useDelimiter(("((?<=\\s\\w{1,10})[^\\w\\s])?\\s|[^\\w\\s]$"));
@@ -309,25 +315,30 @@ public class Train {
             String[] wordsArray = words.split(" ");
             if(words.toLowerCase().startsWith("subject:") && !subjectSeen) {
                 subjectSeen = true;
-                for(int i=1; i<wordsArray.length; i++) {
-                    wordsArray[i] = "subject" + wordsArray[i];
-                }
             }
             //if(subjectSeen) {
                 for(String w: wordsArray) {
-                    w = w.replaceAll("[^A-Za-z0-9']", "");
-                    if(!w.equals("") && !w.equals(" ") && !stopwords.contains(w)) {
-                        if(m_spam_prob.containsKey(w)) {
-                            if (spamFlag){
-                                prob = m_spam_prob.get(w);
-                            } else {
-                                prob = m_ham_prob.get(w);
-                            }
-                            product += Math.log(prob);
+                    w = w.replaceAll("[^A-Za-z']", "");
+                    //if(!w.equals("") && !w.equals(" ") {
+                    if(w.length() > 2 && !w.equals("") && !w.equals(" ") && !stopwords.contains(w.toLowerCase())) {
+                        if(subjectSeen && !doneOnce) {
+                            w = "*" + w;
                         }
-                    }
+                    //if(!stopwords.contains(w.toLowerCase())) {
+                        if(!w.equals("") && !w.equals(" ")) {
+                            if(m_spam_prob.containsKey(w)) {
+                                if (spamFlag){
+                                    prob = m_spam_prob.get(w);
+                                } else {
+                                    prob = m_ham_prob.get(w);
+                                }
+                                product += Math.log(prob);
+                            }
+                        }
                 }
-           // }
+           }
+           if(subjectSeen)
+                doneOnce = true;
         }
         return product;
     }

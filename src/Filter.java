@@ -44,28 +44,41 @@ public class Filter {
         double product = 0;
         Scanner sc = null;
         double prob;
+        boolean subjectSeen = false, doneOnce = false;
         try {
             sc = new Scanner(filename);
         //    sc.useDelimiter(("((?<=\\s\\w{1,10})[^\\w\\s])?\\s|[^\\w\\s]$"));
         } catch (FileNotFoundException e) {
             System.out.println(e);
         }
-        while (sc.hasNext()) {
-            String w = sc.next();
-            if(m_spam_prob.containsKey(w)) {
-                if (spamFlag){
-                    prob = m_spam_prob.get(w);
-                } else {
-                    prob = m_ham_prob.get(w);
-                }
-                product += Math.log(prob);
+        while (sc.hasNextLine()) {
+            String words = sc.nextLine();
+            String[] wordsArray = words.split(" ");
+            if(words.toLowerCase().startsWith("subject:") && !subjectSeen) {
+                subjectSeen = true;
             }
+            for(String w: wordsArray) {
+                w = w.replaceAll("[^A-Za-z']", "");
+                if(subjectSeen && !doneOnce)
+                    w = "*" + w;
+                if(m_spam_prob.containsKey(w)) {
+                    if (spamFlag){
+                        prob = m_spam_prob.get(w);
+                    } else {
+                        prob = m_ham_prob.get(w);
+                    }
+                    product += Math.log(prob);
+                }
+            }
+            if(subjectSeen)
+                doneOnce = true;
         }
         return product;
     }
     
     public void readTrainingFile(){
         BufferedReader br = null;
+        boolean subjectSeen = false;
         try {
             br = new BufferedReader(new FileReader("training.txt"));
             String currentLine;
